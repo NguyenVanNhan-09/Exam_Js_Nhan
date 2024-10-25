@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../assets/css/output.css">
+    <style>
+        #box {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex justify-center items-center min-h-screen">
+        <div class="min-w-[640px] min-h-[550px] mx-auto my-auto border border-black relative">
+            <div id="box" class="w-[100px] h-[100px] bg-blue-400 absolute"></div>
+        </div>
+    </div>
+    <script>
+        const box = document.querySelector("#box")
+
+        function posionBox(posion) {
+            return new Promise(function (resolve) {
+                switch (posion) {
+                    case 'top-left':
+                        box.style.top = '0';
+                        box.style.left = '0';
+                        break;
+                    case 'top-right':
+                        box.style.top = '0';
+                        box.style.left = 'calc(100% - 100px)';
+                        break;
+                    case 'bottom-right':
+                        box.style.top = 'calc(100% - 100px)';
+                        box.style.left = 'calc(100% - 100px)';
+                        break;
+                    case 'bottom-left':
+                        box.style.top = 'calc(100% - 100px)';
+                        box.style.left = '0';
+                        break;
+                }
+                setTimeout(resolve, 2000);
+            })
+        }
+        async function moveBox() {
+            await posionBox('top-left');
+            await posionBox('top-right');
+            await posionBox('bottom-right');
+            await posionBox('bottom-left');
+            await posionBox('top-left');
+        }
+        moveBox()
+    </script>
+</body>
+
+</html>

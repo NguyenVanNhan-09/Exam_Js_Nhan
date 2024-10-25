@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video App</title>
+    <link rel="stylesheet" href="../../assets/css/output.css">
+    <style>
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+        }
+
+        .play-pause-button,
+        .mute-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .video-container {
+            position: relative;
+            max-height: 577px;
+            max-width: 1024px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex justify-center items-center min-h-screen">
+        <div id="container__video" class="video-container mx-auto rounded-2xl ">
+            <video id="video" src="./lowGbbno.mp4" class="w-full h-full object-cover" autoplay></video>
+
+            <!-- Lớp overlay -->
+            <div id="overlay" class="overlay cursor-pointer">
+                <button class="playPauseBtn play-pause-button">
+                    <img src="./icon/ti-play.svg" class="playIcon w-[58px] h-[58px] p-3 bg-[#3B3E42] rounded-full"
+                        alt="Play">
+                    <img src="./icon/ti-pause.svg"
+                        class="pauseIcon w-[58px] h-[58px] hidden p-3 bg-[#3B3E42] rounded-full" alt="Pause">
+                </button>
+            </div>
+
+            <div id="controllerBar" class="absolute w-full bottom-0 px-[30px] mb-[12px]">
+                <div class="flex flex-col">
+                    <h4 class="text-white text-xl">Chỉ 1 đêm nữa thôi !!!</h4>
+                    <div class="flex justify-between">
+                        <p class="text-white text-base">Mck</p>
+                        <div>
+                            <span id="currentTime" class="text-white">00:00</span> / <span id="duration"
+                                class="text-white">00:00</span>
+                        </div>
+                    </div>
+                </div>
+                <input type="range" class="w-full cursor-pointer" min="0" max="100" value="0">
+                <div class="flex justify-between">
+                    <div class="flex">
+                        <button class="playPauseBtn play-pause-button">
+                            <img src="./icon/ti-play.svg" class="playIcon w-[48px] h-[48px]" alt="Play">
+                            <img src="./icon/ti-pause.svg" class="pauseIcon w-[48px] h-[48px] hidden" alt="Pause">
+                        </button>
+
+                        <button id="seek-backward">
+                            <img src="./icon/ti-10s.svg" class="w-[48px] h-[48px]" alt="">
+                        </button>
+                        <button id="seek-forward">
+                            <img src="./icon/ti-10ss.svg" class="w-[48px] h-[48px]" alt="">
+                        </button>
+                    </div>
+                    <div class="flex">
+                        <button class="mute-button">
+                            <img src="./icon/ti-mute.svg" class="muteIcon w-[48px] h-[48px]" alt="Mute">
+                            <img src="./icon/ti-nomute.svg" class="unmuteIcon w-[48px] h-[48px] hidden" alt="Unmute">
+                        </button>
+                        <button class="fullScreen-button">
+                            <img src="./icon/ti-fullscreen.svg" class="w-[48px] h-[48px]" alt="">
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = document.querySelector.bind(document);
+        const $$ = document.querySelectorAll.bind(document);
+        const video = $('#video');
+        const overlay = $('#overlay');
+        const playPauseBtns = $$('.playPauseBtn');
+        const playIcons = $$('.playIcon');
+        const pauseIcons = $$('.pauseIcon');
+        const muteBtn = $('.mute-button');
+        const muteIcon = $('.muteIcon');
+        const unmuteIcon = $('.unmuteIcon');
+        const seekBackwardBtn = $('#seek-backward');
+        const seekForwardBtn = $('#seek-forward');
+        const rangeInput = $('input[type="range"]');
+        const fullScreen = $('.fullScreen-button')
+        const currentTimeDisplay = $('#currentTime');
+        const durationDisplay = $('#duration');
+        const controllerBar = $('#controllerBar');
+        const container__video = $('#container__video');
+        let controllerVisible = true;
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        video.addEventListener('pause', () => {
+            overlay.classList.add('visible');
+            playIcons.forEach(icon => icon.classList.remove('hidden'));
+            pauseIcons.forEach(icon => icon.classList.add('hidden'));
+        });
+
+        video.addEventListener('play', () => {
+            overlay.classList.remove('visible');
+            durationDisplay.textContent = formatTime(video.duration)
+            playIcons.forEach(icon => icon.classList.add('hidden'));
+            pauseIcons.forEach(icon => icon.classList.remove('hidden'));
+        });
+
+        video.addEventListener('timeupdate', () => {
+            currentTimeDisplay.textContent = formatTime(video.currentTime);
+        });
+
+        // khi nhấấn vào overlay
+        overlay.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        });
+
+        //  play/pause
+        playPauseBtns.forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (video.paused) {
+                    video.play();
+                    overlay.classList.remove('visible');
+                    playIcons.forEach(icon => icon.classList.add('hidden'));
+                    pauseIcons.forEach(icon => icon.classList.remove('hidden'));
+                } else {
+                    video.pause();
+                    overlay.classList.add('visible');
+                    playIcons.forEach(icon => icon.classList.remove('hidden'));
+                    pauseIcons.forEach(icon => icon.classList.add('hidden'));
+                }
+            });
+        });
+
+        // Thay đổi âm thanh 
+        muteBtn.addEventListener('click', () => {
+            if (video.muted) {
+                video.muted = false;
+                muteIcon.classList.add('hidden');
+                unmuteIcon.classList.remove('hidden');
+            } else {
+                video.muted = true;
+                muteIcon.classList.remove('hidden');
+                unmuteIcon.classList.add('hidden');
+            }
+        });
+
+        // Tua 15 giây lừi
+        seekBackwardBtn.addEventListener('click', () => {
+            if (video.currentTime - 15 < 0) {
+                video.currentTime = 0;
+            } else {
+                video.currentTime -= 15;
+            }
+        });
+
+        // Tua 15 giây tiến
+        seekForwardBtn.addEventListener('click', () => {
+            if (video.currentTime + 15 > video.duration) {
+                video.currentTime = video.duration;
+            } else {
+                video.currentTime += 15;
+            }
+        });
+
+        rangeInput.addEventListener('input', () => {
+            const newTime = (rangeInput.value / 100) * video.duration;
+            video.currentTime = newTime;
+        });
+
+        // change input 
+        video.addEventListener('timeupdate', () => {
+            const value = (video.currentTime / video.duration) * 100;
+            rangeInput.value = value;
+        });
+
+        // khi hết video
+        video.addEventListener('ended', () => {
+            overlay.classList.add('visible');
+            playIcons.forEach(icon => icon.classList.remove('hidden'));
+            pauseIcons.forEach(icon => icon.classList.add('hidden'));
+        });
+
+        // full màn hình
+        fullScreen.addEventListener("click", () => {
+            video.requestFullscreen()
+        })
+
+        // bắt key
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                document.exitFullscreen();
+            } else if (e.key === " ") {
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            } else if (e.key === "ArrowRight") {
+                if (video.currentTime + 15 > video.duration) {
+                    video.currentTime = video.duration;
+                } else {
+                    video.currentTime += 15;
+                }
+
+            } else if (e.key === "ArrowLeft") {
+                if (video.currentTime - 15 < 0) {
+                    video.currentTime = 0;
+                } else {
+                    video.currentTime -= 15;
+                }
+            }
+        })
+
+
+        // Hàm để ẩn thanh điều khiển sau 5 giây
+        const hideControllerAfterDelay = () => {
+            setTimeout(() => {
+                controllerBar.style.display = 'none';
+                controllerVisible = false;
+            }, 5000);
+        };
+
+        container__video.addEventListener('mousemove', () => {
+            if (!controllerVisible) {
+                controllerBar.style.display = 'block';
+                controllerVisible = true;
+            }
+        });
+
+        container__video.addEventListener('mouseleave', () => {
+            if (controllerVisible) {
+                controllerBar.style.display = 'none';
+                controllerVisible = false;
+            }
+        });
+
+        video.addEventListener('play', hideControllerAfterDelay);
+    </script>
+</body>
+
+</html>
